@@ -6,7 +6,7 @@ const Hero = () => {
     <section className="w-full py-20 bg-gradient-to-b from-gray-900 to-black">
       <div className="container mx-auto px-4 text-center">
         <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
-          处于预览环境1
+          处于预览环境12
         </h1>
         <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-4xl mx-auto leading-relaxed">
           Build high-performance, scalable web applications using Next.js on EdgeOne Pages. Leverage complete Next.js rendering modes including SSR, ISR, and SSG, while building dynamic APIs and complex backend features.        </p>
