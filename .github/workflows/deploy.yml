@@ -42,9 +42,10 @@ jobs:
 
       # ---------------------------------------------
       # 安装指定版本的 edgeone CLI
+      # 注：@tencent/edgeone 是腾讯内部私有包，需要用腾讯镜像源
       # ---------------------------------------------
       - name: Install edgeone CLI
-        run: npm install -g @tencent/edgeone@1.4.6-beta.2
+        run: npm install -g @tencent/edgeone@1.4.6-beta.2 --registry=https://mirrors.tencent.com/npm/
 
       - name: Verify CLI version
         run: edgeone --version
