@@ -16,11 +16,11 @@ on:
       env:
         description: 'Environment'
         required: false
-        default: 'Production'
+        default: 'production'
         type: choice
         options:
-          - Production
-          - Preview
+          - production
+          - preview
 
 jobs:
   deploy:
@@ -62,7 +62,7 @@ jobs:
           COS_FILE_PARALLEL_LIMIT: '5'      # 文件并发：10 → 5
         run: |
           AREA="${{ github.event.inputs.area || 'global' }}"
-          ENV_NAME="${{ github.event.inputs.env || 'Production' }}"
+          ENV_NAME="${{ github.event.inputs.env || 'production' }}"
           edgeone pages deploy \
             --name next-mix-test-corbin \
             --area "$AREA" \
