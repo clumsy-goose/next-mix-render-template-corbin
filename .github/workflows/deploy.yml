@@ -1,0 +1,80 @@
+name: Deploy to EdgeOne Pages
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:   # 支持手动触发
+    inputs:
+      area:
+        description: 'Deploy area'
+        required: false
+        default: 'global'
+        type: choice
+        options:
+          - global
+          - overseas
+      env:
+        description: 'Environment'
+        required: false
+        default: 'Production'
+        type: choice
+        options:
+          - Production
+          - Preview
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install project dependencies
+        run: npm ci
+
+      # ---------------------------------------------
+      # 安装指定版本的 edgeone CLI
+      # ---------------------------------------------
+      - name: Install edgeone CLI
+        run: npm install -g @tencent/edgeone@1.4.6-beta.2
+
+      - name: Verify CLI version
+        run: edgeone --version
+
+      - name: Build & Deploy to EdgeOne Pages
+        env:
+          EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
+          # ------------------------------
+          # 针对 GitHub Actions 跨境网络的优化
+          # 默认参数对跨境链路过于激进，这里调保守值
+          # ------------------------------
+          COS_CHUNK_SIZE_MB: '2'            # 分片大小：8MB → 2MB
+          COS_CHUNK_PARALLEL_LIMIT: '3'     # 分片并发：8 → 3
+          COS_CHUNK_RETRY_TIMES: '5'        # 分片重试：2 → 5
+          COS_FILE_PARALLEL_LIMIT: '5'      # 文件并发：10 → 5
+        run: |
+          AREA="${{ github.event.inputs.area || 'global' }}"
+          ENV_NAME="${{ github.event.inputs.env || 'Production' }}"
+          edgeone pages deploy \
+            --name next-mix-test-corbin \
+            --area "$AREA" \
+            --env "$ENV_NAME"
+
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-logs-${{ github.run_id }}
+          path: |
+            .edgeone/
+            ~/.npm/_logs/
+          retention-days: 7
+          if-no-files-found: ignore
