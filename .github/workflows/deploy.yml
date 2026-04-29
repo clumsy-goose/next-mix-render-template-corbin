@@ -53,11 +53,13 @@ jobs:
       - name: Build & Deploy to EdgeOne Pages
         env:
           # 📋 Variables：可配置的非敏感参数，未设置时使用默认值
-          # 针对 GitHub Actions 跨境网络的上传优化参数
-          COS_CHUNK_SIZE_MB: ${{ vars.COS_CHUNK_SIZE_MB || '8' }}
-          COS_CHUNK_PARALLEL_LIMIT: ${{ vars.COS_CHUNK_PARALLEL_LIMIT || '8' }}
-          COS_CHUNK_RETRY_TIMES: ${{ vars.COS_CHUNK_RETRY_TIMES || '2' }}
-          COS_FILE_PARALLEL_LIMIT: ${{ vars.COS_FILE_PARALLEL_LIMIT || '10' }}
+          # 针对 GitHub Actions 跨境网络优化的保守参数（默认值）
+          COS_CHUNK_SIZE_MB: ${{ vars.COS_CHUNK_SIZE_MB || '2' }}
+          COS_CHUNK_PARALLEL_LIMIT: ${{ vars.COS_CHUNK_PARALLEL_LIMIT || '3' }}
+          COS_CHUNK_RETRY_TIMES: ${{ vars.COS_CHUNK_RETRY_TIMES || '5' }}
+          COS_FILE_PARALLEL_LIMIT: ${{ vars.COS_FILE_PARALLEL_LIMIT || '5' }}
+          # 强制以非 TTY 模式输出日志（避免 ANSI 控制码导致 runner 日志异常）
+          FORCE_NON_TTY: '1'
         run: |
           # 优先级：手动触发时的 inputs > Variables > 默认值
           AREA="${{ github.event.inputs.area || vars.EDGEONE_AREA || 'global' }}"
@@ -66,9 +68,10 @@ jobs:
 
           echo "==> Deploying project: $PROJECT_NAME"
           echo "==> Area: $AREA, Environment: $ENV_NAME"
+          echo "==> Upload config: CHUNK_SIZE=${COS_CHUNK_SIZE_MB}MB, CHUNK_PARALLEL=${COS_CHUNK_PARALLEL_LIMIT}, RETRY=${COS_CHUNK_RETRY_TIMES}, FILE_PARALLEL=${COS_FILE_PARALLEL_LIMIT}"
 
           edgeone pages deploy \
-            --name next-mix-test-corbin \
+            --name "$PROJECT_NAME" \
             --area "$AREA" \
             --env "$ENV_NAME" \
             --token "${{ secrets.EDGEONE_API_TOKEN }}"
